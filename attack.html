@@ -348,11 +348,7 @@
             */
             dst = dst_array[index];
             src = src_array[index];
-            if (index == 4) {
-                index = 0;
-            } else {
-                index = index + 1;
-            }
+
 
             var srclat = slatlong[src].lat;
             var srclong = slatlong[src].long;
@@ -392,6 +388,12 @@
                 " <span style='color:steelblue'>(" + which_attack + ")</span> " +
                 "<br/>");
             $('#attackdiv').animate({scrollTop: $('#attackdiv').prop("scrollHeight")}, 500);
+
+            if (index == 4) {
+                index = 0;
+            } else {
+                index = index + 1;
+            }
 
             // pick a new random time and start the timer again!
             this.interval = getRandomInt(attack_min, attack_max);
