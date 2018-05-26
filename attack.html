@@ -263,8 +263,10 @@
 
     // we read in a modified file of all country centers
     var centers = [] ;
+    // @todo 直接用了固定的slatlong长度，以后可以改掉
+    var slatlong_length = 2529;
     d3.tsv("country_centroids_primary.csv", function(data) { centers = data; });
-    d3.csv("samplatlong.csv", function(data) { slatlong = data; });
+    d3.csv("samplatlong.csv", function(data) { slatlong = data;});
     d3.csv("cnlatlong.csv", function(data) { cnlatlong = data; });
 
     // setup structures for the "hits" (arcs)
@@ -272,6 +274,22 @@
 
     var hits = FixedQueue( 7, [  ] );
     var boom = FixedQueue( 7, [  ] );
+
+    var src_array = new Array(5);
+    var dst_array = new Array(5);
+    //@todo Index只是为了调试
+    var index = 0;
+    for (var i = 0; i < 5; i++) {
+        src_array[i] = -1;
+        dst_array[i] = -1;
+    }
+
+    // function include in array
+    function include(arr, obj) {
+        for(var i=0; i<arr.length; i++) {
+            if (arr[i] == obj) return true;
+        }
+    }
 
     // we need random numbers and also a way to build random ip addresses
     function getRandomInt(min, max) {return Math.floor(Math.random() * (max - min + 1)) + min;}
@@ -294,10 +312,29 @@
             );
         },
 
+        //@todo 获得五个不同的点
+        getPosition: function() {
+            var self = this;
+            for (var i = 0; i < 5; i++) {
+                dst = Math.floor((Math.random() * slatlong_length));
+                while (include(dst_array, dst) || include(src_array, dst)) {
+                    dst = Math.floor((Math.random() * slatlong_length));
+                }
+                dst_array[i] = dst;
+                src = Math.floor((Math.random() * slatlong_length));
+                while (include(src_array, src) || include(dst_array, src)) {
+                    src = Math.floor((Math.random() * slatlong_length));
+                }
+                src_array[i] = src;
+            }
+        },
+
         getData: function() {
 
             var self = this;
 
+
+            /*
             dst = Math.floor((Math.random() * slatlong.length));
             src = Math.floor((Math.random() * slatlong.length));
 
@@ -308,6 +345,14 @@
 
             // add hit to the arc queue
             // use strokeColor to set arc line color
+            */
+            dst = dst_array[index];
+            src = src_array[index];
+            if (index == 4) {
+                index = 0;
+            } else {
+                index = index + 1;
+            }
 
             var srclat = slatlong[src].lat;
             var srclong = slatlong[src].long;
@@ -350,11 +395,14 @@
 
             // pick a new random time and start the timer again!
             this.interval = getRandomInt(attack_min, attack_max);
+            //@todo 重复产生点被注释掉了
             this.init() ;
         },
 
     };
 
+    // 产生攻击的点
+    attacks.getPosition();
     // start the ball rolling!
     attacks.init();
 
